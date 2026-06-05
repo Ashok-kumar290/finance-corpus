@@ -73,7 +73,7 @@ def main() -> None:
         gradient_accumulation_steps=args.grad_accum, num_train_epochs=args.epochs,
         learning_rate=args.lr, lr_scheduler_type="cosine", warmup_ratio=0.03,
         bf16=use_bf16, fp16=not use_bf16, logging_steps=10, save_strategy="epoch",
-        max_seq_length=args.max_seq_len, packing=False, report_to="none",
+        max_length=args.max_seq_len, packing=False, report_to="none",   # TRL renamed max_seq_length->max_length
     )
     trainer = SFTTrainer(model=model, args=cfg, train_dataset=ds, peft_config=lora,
                          processing_class=tok)
