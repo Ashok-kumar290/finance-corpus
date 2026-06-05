@@ -9,12 +9,8 @@ use the Batch API pipeline (generate_corpus.py), or mix in an open dataset.
 """
 from __future__ import annotations
 
+from finance_corpus import TRAIN_SYSTEM
 from finance_corpus.schema import Example, write_jsonl
-
-TRAIN_SYSTEM = (
-    "You are a precise finance, economics, and quantitative-methods tutor. "
-    "Explain with clear step-by-step reasoning, then state the final answer."
-)
 
 # (topic, subtopic, difficulty, question, answer, reasoning)
 SEED = [
@@ -156,6 +152,98 @@ SEED = [
      "Accrual accounting matches revenue to the period in which the performance obligation is satisfied. "
      "Cash may arrive earlier (deferred revenue, a liability) or later (accounts receivable, an asset); "
      "the income statement reflects when the revenue is earned, not when cash moves."),
+    ("fixed_income", "current yield", "foundational",
+     "A bond with a $40 annual coupon trades at $950. What is its current yield?",
+     "4.21%",
+     "Current yield = annual coupon / price = 40 / 950 = 0.0421 = 4.21%. It ignores capital gain/loss "
+     "to maturity, unlike yield to maturity."),
+    ("fixed_income", "coupon vs yield", "intermediate",
+     "If a bond's coupon rate is below its yield to maturity, will it trade at a premium, par, or discount?",
+     "At a discount (below face value).",
+     "When the coupon (5% say) is below what the market demands (the YTM), investors will only buy the "
+     "bond for less than face value, so its lower coupon plus the price gain to par equals the market yield. "
+     "Coupon > YTM → premium; coupon = YTM → par; coupon < YTM → discount."),
+    ("equity_valuation", "relative valuation multiples", "foundational",
+     "A stock trades at $40 with earnings per share of $2. What is its P/E ratio?",
+     "20×",
+     "P/E = price / EPS = 40 / 2 = 20. Investors are paying $20 per $1 of annual earnings."),
+    ("financial_statements", "income statement", "foundational",
+     "A company has net income of $2,000,000 and 500,000 shares outstanding. What is its EPS?",
+     "$4.00",
+     "EPS = net income / shares outstanding = 2,000,000 / 500,000 = $4.00 per share."),
+    ("portfolio_management", "expected return and risk", "foundational",
+     "You buy a stock at $100, receive a $2 dividend, and sell it for $108. What is your holding-period return?",
+     "10%",
+     "HPR = (ending price − beginning price + income) / beginning price = (108 − 100 + 2) / 100 = 10 / 100 = 10%."),
+    ("portfolio_management", "systematic vs unsystematic risk", "intermediate",
+     "What is the difference between systematic and unsystematic risk, and which can be diversified away?",
+     "Systematic (market) risk cannot be diversified away; unsystematic (firm-specific) risk can.",
+     "Unsystematic risk is specific to a company or sector and shrinks as you add uncorrelated holdings. "
+     "Systematic risk affects the whole market (rates, recessions) and remains no matter how diversified you "
+     "are — which is why CAPM rewards only systematic risk (beta)."),
+    ("quantitative_methods", "correlation and covariance", "foundational",
+     "What is the possible range of a correlation coefficient, and what does +1 mean?",
+     "−1 to +1; +1 means the two variables move together perfectly and proportionally.",
+     "Correlation is bounded in [−1, +1]. +1 is perfect positive linear co-movement, −1 perfect inverse, "
+     "and 0 no linear relationship. Diversification benefit grows as correlation falls below +1."),
+    ("derivatives", "the Greeks", "intermediate",
+     "What does the delta of a call option represent, and what is its range?",
+     "The sensitivity of the option's price to a $1 change in the underlying; it ranges from 0 to 1 for a call.",
+     "Delta ≈ ∂(option price)/∂(underlying). A call delta near 1 is deep in-the-money (moves nearly one-for-one "
+     "with the stock); near 0 is far out-of-the-money. It also approximates the probability of finishing in-the-money."),
+    ("economics", "exchange rates", "intermediate",
+     "If the US dollar appreciates against the euro, what happens to US exporters?",
+     "US goods become more expensive for European buyers, tending to reduce US exports.",
+     "A stronger dollar means Europeans need more euros to buy the same dollar-priced US goods, raising the "
+     "effective price abroad and dampening export demand. It conversely makes imports cheaper for US buyers."),
+    ("economics", "monetary policy", "advanced",
+     "If the reserve requirement is 10%, what is the simple money multiplier?",
+     "10",
+     "Simple money multiplier = 1 / reserve ratio = 1 / 0.10 = 10. A $1 increase in reserves can support up "
+     "to $10 of new deposits through the banking system (ignoring cash holdings and excess reserves)."),
+    ("economics", "inflation and CPI", "intermediate",
+     "Nominal interest is 6% and inflation is 2%. Approximately what is the real interest rate?",
+     "≈ 4%",
+     "By the Fisher approximation, real rate ≈ nominal rate − inflation = 6% − 2% = 4%. (Exactly, "
+     "1.06/1.02 − 1 = 3.92%.) The real rate is what your purchasing power actually grows by."),
+    ("financial_statements", "depreciation", "intermediate",
+     "An asset costs $50,000, has a $5,000 salvage value and a 5-year life. Annual straight-line depreciation?",
+     "$9,000 per year",
+     "Straight-line depreciation = (cost − salvage) / useful life = (50,000 − 5,000) / 5 = 45,000 / 5 = $9,000/yr."),
+    ("corporate_finance", "working capital management", "foundational",
+     "Current assets are $300,000 and current liabilities are $200,000. What is net working capital?",
+     "$100,000",
+     "Net working capital = current assets − current liabilities = 300,000 − 200,000 = $100,000. Positive NWC "
+     "means short-term assets exceed short-term obligations."),
+    ("alternative_investments", "hedge fund strategies", "intermediate",
+     "What does a long/short equity hedge fund do, and why?",
+     "It buys (longs) stocks it expects to outperform and short-sells stocks it expects to underperform.",
+     "By being long the winners and short the losers, the fund profits from relative performance and reduces "
+     "exposure to broad market moves (it can be roughly market-neutral), isolating stock-selection skill."),
+    ("alternative_investments", "commodities", "advanced",
+     "A futures curve is in 'contango.' What does that mean?",
+     "Futures prices are higher than the current spot price (the curve slopes upward with maturity).",
+     "Contango means longer-dated futures cost more than near-dated/spot, often reflecting storage and carrying "
+     "costs. A long futures position that must roll contracts can lose value rolling up the curve (negative roll yield)."),
+    ("portfolio_management", "factor models", "advanced",
+     "In performance evaluation, what does a portfolio's 'alpha' measure?",
+     "Return earned beyond what its risk exposure (e.g., beta) would predict.",
+     "Alpha is the intercept in a regression of portfolio excess returns on factor (e.g., market) excess returns "
+     "— the risk-adjusted excess return attributable to skill rather than to taking on systematic risk."),
+    ("ethics_and_risk", "fiduciary duty", "intermediate",
+     "An analyst learns material non-public information about a company. What must they not do?",
+     "They must not trade on it or tip others — that would be illegal insider trading.",
+     "Material non-public information, if acted upon, gives an unfair advantage and breaches duties to the market "
+     "and the information's source. The analyst must refrain from trading and from sharing it until it is public."),
+    ("ethics_and_risk", "risk management frameworks", "intermediate",
+     "Name one key limitation of Value at Risk (VaR) as a risk measure.",
+     "It says nothing about how large losses can be beyond the VaR threshold (the tail).",
+     "VaR gives a loss level at a confidence level (e.g., 95%) but is silent on the severity of the worst 5% of "
+     "outcomes. Conditional VaR / expected shortfall addresses this by averaging losses in the tail."),
+    ("quantitative_methods", "probability distributions", "intermediate",
+     "In a normal distribution, approximately what percentage of observations fall within ±1 standard deviation of the mean?",
+     "About 68%",
+     "By the empirical rule for a normal distribution: ~68% within ±1σ, ~95% within ±2σ, ~99.7% within ±3σ."),
 ]
 
 
