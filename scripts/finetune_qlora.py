@@ -44,15 +44,18 @@ def main() -> None:
     print(f"base={args.model} · data={args.data} · epochs={args.epochs} · "
           f"effective batch={args.batch * args.grad_accum}")
 
+    use_bf16 = torch.cuda.is_bf16_supported()   # T4/Turing lack bf16 -> fall back to fp16
+    dtype = torch.bfloat16 if use_bf16 else torch.float16
+    print(f"precision: {'bf16' if use_bf16 else 'fp16 (T4/Turing GPU)'}")
     bnb = BitsAndBytesConfig(
         load_in_4bit=True, bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True,
+        bnb_4bit_compute_dtype=dtype, bnb_4bit_use_double_quant=True,
     )
     tok = AutoTokenizer.from_pretrained(args.model)
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
     model = AutoModelForCausalLM.from_pretrained(
-        args.model, quantization_config=bnb, device_map="auto", torch_dtype=torch.bfloat16,
+        args.model, quantization_config=bnb, device_map="auto", torch_dtype=dtype,
     )
 
     ds = load_dataset("json", data_files=args.data, split="train")
@@ -69,7 +72,7 @@ def main() -> None:
         output_dir=args.out, per_device_train_batch_size=args.batch,
         gradient_accumulation_steps=args.grad_accum, num_train_epochs=args.epochs,
         learning_rate=args.lr, lr_scheduler_type="cosine", warmup_ratio=0.03,
-        bf16=True, logging_steps=10, save_strategy="epoch",
+        bf16=use_bf16, fp16=not use_bf16, logging_steps=10, save_strategy="epoch",
         max_seq_length=args.max_seq_len, packing=False, report_to="none",
     )
     trainer = SFTTrainer(model=model, args=cfg, train_dataset=ds, peft_config=lora,
